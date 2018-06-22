@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeremy.modules.oa.dao.LeaveConfigDao">
+    
+	<sql id="leaveConfigColumns">
+		a.id AS "id",
+		a.min_seniority AS "minSeniority",
+		a.max_seniority AS "maxSeniority",
+		a.leave_days AS "leaveDays",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="leaveConfigJoins">
+	</sql>
+    
+	<select id="get" resultType="com.jeremy.modules.oa.entity.LeaveConfig">
+		SELECT 
+			<include refid="leaveConfigColumns"/>
+		FROM oa_leave_config a
+		<include refid="leaveConfigJoins"/>
+		WHERE a.id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findList" resultType="com.jeremy.modules.oa.entity.LeaveConfig">
+		SELECT 
+			<include refid="leaveConfigColumns"/>
+		FROM oa_leave_config a
+		<include refid="leaveConfigJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.jeremy.modules.oa.entity.LeaveConfig">
+		SELECT 
+			<include refid="leaveConfigColumns"/>
+		FROM oa_leave_config a
+		<include refid="leaveConfigJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_leave_config(
+			id,
+			min_seniority,
+			max_seniority,
+			leave_days,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks
+		) VALUES (
+			#{id,jdbcType=VARCHAR},
+			#{minSeniority,jdbcType=VARCHAR},
+			#{maxSeniority,jdbcType=VARCHAR},
+			#{leaveDays,jdbcType=VARCHAR},
+			#{createBy.id,jdbcType=VARCHAR},
+			#{createDate,jdbcType=TIMESTAMP},
+			#{updateBy.id,jdbcType=VARCHAR},
+			#{updateDate,jdbcType=TIMESTAMP},
+			#{remarks,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="insertSelective">
+		INSERT INTO oa_leave_config
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id != ''">
+			id,
+		</if>
+		<if test="minSeniority != null and minSeniority != ''">
+			min_seniority,
+		</if>
+		<if test="maxSeniority != null and maxSeniority != ''">
+			max_seniority,
+		</if>
+		<if test="leaveDays != null and leaveDays != ''">
+			leave_days,
+		</if>
+		<if test="createBy != null and createBy.id != null and createBy.id != ''">
+			create_by,
+		</if>
+		<if test="createDate != null and createDate != ''">
+			create_date,
+		</if>
+		<if test="updateBy != null and updateBy.id != null and updateBy.id != ''">
+			update_by,
+		</if>
+		<if test="updateDate != null and updateDate != ''">
+			update_date,
+		</if>
+		<if test="remarks != null and remarks != ''">
+			remarks,
+		</if>
+		</trim>
+		<trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id != ''">
+			#{id,jdbcType=VARCHAR},
+		</if>
+		<if test="minSeniority != null and minSeniority != ''">
+			#{minSeniority,jdbcType=VARCHAR},
+		</if>
+		<if test="maxSeniority != null and maxSeniority != ''">
+			#{maxSeniority,jdbcType=VARCHAR},
+		</if>
+		<if test="leaveDays != null and leaveDays != ''">
+			#{leaveDays,jdbcType=VARCHAR},
+		</if>
+		<if test="createBy != null and createBy.id != null and createBy.id != ''">
+			#{createBy.id,jdbcType=VARCHAR},
+		</if>
+		<if test="createDate != null and createDate != ''">
+			#{createDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="updateBy != null and updateBy.id != null and updateBy.id != ''">
+			#{updateBy.id,jdbcType=VARCHAR},
+		</if>
+		<if test="updateDate != null and updateDate != ''">
+			#{updateDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="remarks != null and remarks != ''">
+			#{remarks,jdbcType=VARCHAR},
+		</if>
+		</trim>
+	</insert>
+		
+	<update id="update">
+		UPDATE oa_leave_config SET 	
+			min_seniority = #{minSeniority,jdbcType=VARCHAR},
+			max_seniority = #{maxSeniority,jdbcType=VARCHAR},
+			leave_days = #{leaveDays,jdbcType=VARCHAR},
+			update_by = #{updateBy.id,jdbcType=VARCHAR},
+			update_date = #{updateDate,jdbcType=TIMESTAMP},
+			remarks = #{remarks,jdbcType=VARCHAR}
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<update id="updateSelective">
+		UPDATE oa_leave_config 	
+		<set>	
+		<if test="id != null and id != ''">
+			id = #{id,jdbcType=VARCHAR},
+		</if>
+		<if test="minSeniority != null and minSeniority != ''">
+			min_seniority = #{minSeniority,jdbcType=VARCHAR},
+		</if>
+		<if test="maxSeniority != null and maxSeniority != ''">
+			max_seniority = #{maxSeniority,jdbcType=VARCHAR},
+		</if>
+		<if test="leaveDays != null and leaveDays != ''">
+			leave_days = #{leaveDays,jdbcType=VARCHAR},
+		</if>
+		<if test="createBy != null and createBy.id != null and createBy.id != ''">
+			create_by = #{createBy.id,jdbcType=VARCHAR},
+		</if>
+		<if test="createDate != null and createDate != ''">
+			create_date = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="updateBy != null and updateBy.id != null and updateBy.id != ''">
+			update_by = #{updateBy.id,jdbcType=VARCHAR},
+		</if>
+		<if test="updateDate != null and updateDate != ''">
+			update_date = #{updateDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="remarks != null and remarks != ''">
+			remarks = #{remarks,jdbcType=VARCHAR},
+		</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>	
+	
+	<update id="delete">
+		DELETE FROM oa_leave_config
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+</mapper>

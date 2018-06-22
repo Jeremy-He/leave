@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeremy.modules.oa.dao.HolidaysDao">
+    
+	<sql id="holidaysColumns">
+		a.id AS "id",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.type AS "type",
+		a.remarks AS "remarks"
+	</sql>
+	
+	<sql id="holidaysJoins">
+	</sql>
+    
+	<select id="get" resultType="com.jeremy.modules.oa.entity.Holidays">
+		SELECT 
+			<include refid="holidaysColumns"/>
+		FROM oa_holidays a
+		<include refid="holidaysJoins"/>
+		WHERE a.id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="findList" resultType="com.jeremy.modules.oa.entity.Holidays">
+		SELECT 
+			<include refid="holidaysColumns"/>
+		FROM oa_holidays a
+		<include refid="holidaysJoins"/>
+		<where>
+			<if test="year != null and year != ''">
+				and date_format(start_date, '%Y') = #{year}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.jeremy.modules.oa.entity.Holidays">
+		SELECT 
+			<include refid="holidaysColumns"/>
+		FROM oa_holidays a
+		<include refid="holidaysJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO oa_holidays(
+			id,
+			start_date,
+			end_date,
+			type,
+			remarks
+		) VALUES (
+			#{id,jdbcType=VARCHAR},
+			#{startDate,jdbcType=TIMESTAMP},
+			#{endDate,jdbcType=TIMESTAMP},
+			#{type,jdbcType=VARCHAR},
+			#{remarks,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="insertSelective">
+		INSERT INTO oa_holidays
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id != ''">
+			id,
+		</if>
+		<if test="startDate != null and startDate != ''">
+			start_date,
+		</if>
+		<if test="endDate != null and endDate != ''">
+			end_date,
+		</if>
+		<if test="type != null and type != ''">
+			type,
+		</if>
+		<if test="remarks != null and remarks != ''">
+			remarks,
+		</if>
+		</trim>
+		<trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+		<if test="id != null and id != ''">
+			#{id,jdbcType=VARCHAR},
+		</if>
+		<if test="startDate != null and startDate != ''">
+			#{startDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="endDate != null and endDate != ''">
+			#{endDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="type != null and type != ''">
+			#{type,jdbcType=VARCHAR},
+		</if>
+		<if test="remarks != null and remarks != ''">
+			#{remarks,jdbcType=VARCHAR},
+		</if>
+		</trim>
+	</insert>
+		
+	<update id="update">
+		UPDATE oa_holidays SET 	
+			start_date = #{startDate,jdbcType=TIMESTAMP},
+			end_date = #{endDate,jdbcType=TIMESTAMP},
+			type = #{type,jdbcType=VARCHAR},
+			remarks = #{remarks,jdbcType=VARCHAR}
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<update id="updateSelective">
+		UPDATE oa_holidays 	
+		<set>	
+		<if test="id != null and id != ''">
+			id = #{id,jdbcType=VARCHAR},
+		</if>
+		<if test="startDate != null and startDate != ''">
+			start_date = #{startDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="endDate != null and endDate != ''">
+			end_date = #{endDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="type != null and type != ''">
+			type = #{type,jdbcType=VARCHAR},
+		</if>
+		<if test="remarks != null and remarks != ''">
+			remarks = #{remarks,jdbcType=VARCHAR},
+		</if>
+		</set>
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>	
+	
+	<update id="delete">
+		DELETE FROM oa_holidays
+		WHERE id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+</mapper>
