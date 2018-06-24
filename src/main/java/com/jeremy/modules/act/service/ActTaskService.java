@@ -126,7 +126,7 @@ public class ActTaskService extends BaseService {
 		if (act.getEndDate() != null){
 			todoTaskQuery.taskCreatedBefore(act.getEndDate());
 		}
-		
+
 		// 查询列表
 		List<Task> todoList = todoTaskQuery.list();
 		for (Task task : todoList) {
@@ -145,7 +145,7 @@ public class ActTaskService extends BaseService {
 		// =============== 等待签收的任务  ===============
 		TaskQuery toClaimQuery = taskService.createTaskQuery().taskCandidateUser(userId)
 				.includeProcessVariables().active().orderByTaskCreateTime().desc();
-		
+		toClaimQuery.processVariableValueEquals("auditOffice", act.getCurrentUser().getOffice().getId());
 		// 设置查询条件
 		if (StringUtils.isNotBlank(act.getProcDefKey())){
 			toClaimQuery.processDefinitionKey(act.getProcDefKey());

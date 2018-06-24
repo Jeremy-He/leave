@@ -42,8 +42,17 @@
 		<if test="status != null and status != ''">
 			AND a.status = #{status}
 		</if>
+		<if test="isCount != null and isCount == 1">
+			AND a.status in (2,3)
+		</if>
 		<if test="ids != null and ids != ''">
 			AND a.id IN (${ids})
+		</if>
+		<if test="office != null and office.id != null and office.id != ''">
+			AND o.id = #{office.id}
+		</if>
+		<if test="createBy != null and createBy.id != null and createBy.id != ''">
+			AND a.create_by = #{createBy.id}
 		</if>
 		<if test="sqlMap != null and sqlMap.dsf != null and sqlMap.dsf != ''">and ${sqlMap.dsf}</if>
 		ORDER BY a.id DESC
@@ -112,7 +121,7 @@
 			reason = #{reason},
 			apply_leave_days = #{applyLeaveDays},
 			give_leave_days = #{giveLeaveDays},
-			status = #{status},
+			`status` = #{status},
 			count_type = #{countType},
 			update_by = #{updateBy.id}, 
 			update_date = #{updateDate}, 
@@ -121,17 +130,17 @@
 	</update>
 	
 	<update id="updateRealityTime">
-		UPDATE oa_leave SET 
-			reality_start_time = #{realityStartTime}, 
+		UPDATE oa_leave SET
+			reality_start_time = #{realityStartTime},
 			reality_end_time = #{realityEndTime},
 			reality_leave_days = #{realityLeaveDays},
-			status = #{status}
-			update_by = #{updateBy.id}, 
-			update_date = #{updateDate}, 
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
 			remarks = #{remarks}
 		WHERE id = #{id}
 	</update>
-		
+
 	<update id="updateProcessInstanceId">
 		UPDATE oa_leave SET 
 			process_instance_id = #{processInstanceId}

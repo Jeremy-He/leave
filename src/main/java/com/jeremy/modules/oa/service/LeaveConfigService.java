@@ -67,6 +67,8 @@ public class LeaveConfigService extends CrudService<LeaveConfigDao, LeaveConfig>
 		condition.setCreateDateEnd(DateUtils.addYears(user.getEntryDate(), 1));
 		// 审核通过
 		condition.setStatus(2);
+		// 年假
+		condition.setLeaveType("0");
 		List<Leave> leaveList = leaveDao.findList(condition);
 		if (!CollectionUtils.isEmpty(leaveList)) {
 			return 0;

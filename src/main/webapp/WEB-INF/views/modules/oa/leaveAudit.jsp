@@ -2,7 +2,7 @@
 <%@ include file="/WEB-INF/views/include/taglib.jsp"%>
 <html>
 <head>
-	<title>审批管理</title>
+	<title>请假审批</title>
 	<meta name="decorator" content="default"/>
 	<script type="text/javascript">
 		$(document).ready(function() {
@@ -48,25 +48,25 @@
 					<td>${leave.createBy.name}</td>
 					<td class="tit">部门</td>
 					<td>${leave.createBy.office.name}</td>
-					<td class="tit">假种</td>
+					<td class="tit">请假类型</td>
 					<td>${fns:getDictLabel(leave.leaveType, 'oa_leave_type', '')}</td>
 				</tr>
 				<tr>
 					<td class="tit">申请时间</td>
 					<td><fmt:formatDate value="${leave.createDate}" type="both"/></td>
-					<td class="tit">请假开始日期</td>
+					<td class="tit">开始日期</td>
 					<td><fmt:formatDate value="${leave.startTime}" pattern="yyyy-MM-dd"/></td>
-					<td class="tit">请假结束日期</td>
+					<td class="tit">结束日期</td>
 					<td><fmt:formatDate value="${leave.endTime}" pattern="yyyy-MM-dd"/></td>
 				</tr>
 				<tr>
-					<td class="tit">申请请假天数</td>
+					<td class="tit">申请天数</td>
 					<td>${leave.applyLeaveDays}</td>
 					<td class="tit">批准天数</td>
 					<td>
 						<input id="giveLeaveDays" name="giveLeaveDays" type="number" class="required digits input-mini" value="${leave.giveLeaveDays}" style="margin: 0;" />
 					</td>
-					<td class="tit">是否需要上级审批</td>
+					<td class="tit">是否上级审批</td>
 					<td>
 						<input id="isNeedParentAudit1" name="isNeedParentAudit" type="radio" value="1" class="required" checked style="margin: 0;" /><label for="isNeedParentAudit1">是</label>&nbsp;
 						<input id="isNeedParentAudit0" name="isNeedParentAudit" type="radio" value="0" class="required" style="margin: 0;" /><label for="isNeedParentAudit0">否</label>

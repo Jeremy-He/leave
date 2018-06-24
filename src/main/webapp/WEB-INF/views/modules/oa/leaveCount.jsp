@@ -5,23 +5,36 @@
 	<title>请假一览</title>
 	<meta name="decorator" content="default"/>
 	<script type="text/javascript">
+        $(document).ready(function() {
+            $("#btnExport").click(function(){
+                top.$.jBox.confirm("确认要导出用户数据吗？","系统提示",function(v,h,f){
+                    if(v=="ok"){
+                        $("#searchForm").attr("action","${ctx}/oa/leave/export");
+                        $("#searchForm").submit();
+                    }
+                },{buttonsFocus:1});
+                top.$('.jbox-body .jbox-icon').css('top','55px');
+            });
+        });
 		function page(n,s){
-			$("#pageNo").val(n);
-			$("#pageSize").val(s);
-			$("#searchForm").submit();
-        	return false;
+            if(n) $("#pageNo").val(n);
+            if(s) $("#pageSize").val(s);
+            $("#searchForm").attr("action","${ctx}/oa/leave/count");
+            $("#searchForm").submit();
+            return false;
         }
 	</script>
 </head>
 <body>
 	<ul class="nav nav-tabs">
-		<li class="active"><a href="${ctx}/oa/leave/list">请假记录</a></li>
-		<shiro:hasPermission name="oa:leave:edit"><li><a href="${ctx}/oa/leave/form">请假申请</a></li></shiro:hasPermission>
+		<li class="active"><a href="${ctx}/oa/leave/count">请假统计</a></li>
 	</ul>
-	<form:form id="searchForm" modelAttribute="leave" action="${ctx}/oa/leave/list" method="post" class="breadcrumb form-search">
+	<form:form id="searchForm" modelAttribute="leave" action="${ctx}/oa/leave/count" method="post" class="breadcrumb form-search">
 		<input id="pageNo" name="pageNo" type="hidden" value="${page.pageNo}"/>
 		<input id="pageSize" name="pageSize" type="hidden" value="${page.pageSize}"/>
 		<div style="margin-top:8px;">
+			<label>归属部门：</label><sys:treeselect id="office" name="office.id" value="${leave.office.id}" labelName="office.name" labelValue="${leave.office.name}"
+													title="部门" url="/sys/office/treeData?type=2" cssClass="input-small" allowClear="true"/>
 			<label>创建时间：</label>
 			<input id="createDateStart"  name="createDateStart"  type="text" readonly="readonly" maxlength="20" class="input-medium Wdate" style="width:163px;"
 				value="<fmt:formatDate value="${leave.createDateStart}" pattern="yyyy-MM-dd"/>"
@@ -30,7 +43,8 @@
 			<input id="createDateEnd" name="createDateEnd" type="text" readonly="readonly" maxlength="20" class="input-medium Wdate" style="width:163px;"
 				value="<fmt:formatDate value="${leave.createDateEnd}" pattern="yyyy-MM-dd"/>"
 					onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"/>
-			&nbsp;<input id="btnSubmit" class="btn btn-primary" type="submit" value="查询"/>
+			&nbsp;<input id="btnSubmit" class="btn btn-primary" type="submit" value="查询" onclick="return page();"/>
+			&nbsp;<input id="btnExport" class="btn btn-primary" type="button" value="导出"/>
 		</div>
 	</form:form>
 	<sys:message content="${message}"/>
@@ -49,14 +63,10 @@
 			<th>实际请假天数</th>
 			<th>请假原因</th>
 			<th>状态</th>
-			<th>当前环节</th>
 			<th>操作</th>
 		</tr></thead>
 		<tbody>
 		<c:forEach items="${page.list}" var="leave">
-			<c:set var="task" value="${leave.task }" />
-			<c:set var="pi" value="${leave.processInstance }" />
-			<c:set var="hpi" value="${leave.historicProcessInstance }" />
 			<tr>
 				<td>${fns:getDictLabel(leave.leaveType, 'oa_leave_type', '')}</td>
 				<td>${leave.createBy.name}</td>
@@ -71,14 +81,7 @@
 				<td>${leave.realityLeaveDays}</td>
 				<td title="${leave.reason}">${fns:abbr(leave.reason,18)}</td>
 				<td>${fns:getDictLabel(leave.status, 'oa_leave_status', '')}</td>
-				<c:if test="${not empty task}">
-					<td>${task.name}</td>
-					<td><a target="_blank" href="${ctx}/act/task/trace/photo/${task.processDefinitionId}/${task.executionId}">跟踪</a></td>
-				</c:if>
-				<c:if test="${empty task}">
-					<td>已结束</td>
-					<td><a href="${ctx}/oa/leave/form?id=${leave.id}">详情</a></td>
-				</c:if>
+				<td><a href="${ctx}/oa/leave/form?id=${leave.id}">详情</a></td>
 			</tr>
 		</c:forEach>
 		</tbody>

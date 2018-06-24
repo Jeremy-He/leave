@@ -140,14 +140,6 @@
 				<form:textarea path="remarks" htmlEscape="false" rows="3" maxlength="200" class="input-xlarge"/>
 			</div>
 		</div>
-		<c:if test="${empty office.id}">
-			<div class="control-group">
-				<label class="control-label">快速添加下级部门:</label>
-				<div class="controls">
-					<form:checkboxes path="childDeptList" items="${fns:getDictList('sys_office_common')}" itemLabel="label" itemValue="value" htmlEscape="false"/>
-				</div>
-			</div>
-		</c:if>
 		<div class="form-actions">
 			<shiro:hasPermission name="sys:office:edit"><input id="btnSubmit" class="btn btn-primary" type="submit" value="保 存"/>&nbsp;</shiro:hasPermission>
 			<input id="btnCancel" class="btn" type="button" value="返 回" onclick="history.go(-1)"/>

@@ -23,14 +23,13 @@
 					}
 				}
 			});
-            $("#startTime").change(countLeaveEndDate);
-            $("#applyLeaveDays").change(countLeaveEndDate);
-            $("input[name='countType']").change(countLeaveEndDate);
+            $("#realityStartTime").change(countLeaveEndDate);
+            $("#realityLeaveDays").change(countLeaveEndDate);
 		});
 		function countLeaveEndDate() {
-            var startTime = $("#startTime").val();
-            var applyLeaveDays = $("#applyLeaveDays").val();
-            var countType = $("input[name='countType']:checked").val();
+            var startTime = $("#realityStartTime").val();
+            var applyLeaveDays = $("#realityLeaveDays").val();
+            var countType = '${leave.countType}';
             if (startTime === '' || applyLeaveDays === '' || countType === '' || countType === undefined) {
                 return;
 			}
@@ -44,7 +43,7 @@
                     countType: countType
                 },
 				success:function (endTime) {
-                    $("#endTime").val(endTime);
+                    $("#realityEndTime").val(endTime);
                 }
 			});
         }
@@ -52,50 +51,78 @@
 </head>
 <body>
 	<ul class="nav nav-tabs">
-		<li><a href="${ctx}/oa/leave/list">请假记录</a></li>
-		<shiro:hasPermission name="oa:leave:edit"><li class="active"><a href="${ctx}/oa/leave/form">请假申请</a></li></shiro:hasPermission>
+		<li><a href="${ctx}/oa/leave/">待办任务</a></li>
+		<li><a href="${ctx}/oa/leave/list">所有任务</a></li>
+		<shiro:hasPermission name="oa:leave:edit"><li class="active"><a>销假</a></li></shiro:hasPermission>
 	</ul>
-	<form:form id="inputForm" modelAttribute="leave" action="${ctx}/oa/leave/save" method="post" class="form-horizontal">
+	<form:form id="inputForm" modelAttribute="leave" action="${ctx}/oa/leave/reportBack" method="post" class="form-horizontal">
 		<form:hidden path="id"/>
+		<form:hidden path="act.taskId"/>
+		<form:hidden path="act.taskName"/>
+		<form:hidden path="act.taskDefKey"/>
+		<form:hidden path="act.procInsId"/>
+		<form:hidden path="act.procDefId"/>
+		<form:hidden id="flag" path="act.flag"/>
 		<sys:message content="${message}"/>
 		<div class="control-group">
 			<label class="control-label">请假类型：</label>
 			<div class="controls">
-				<form:select path="leaveType" cssClass="input-medium">
-					<form:options items="${fns:getDictList('oa_leave_type')}" itemLabel="label" itemValue="value" htmlEscape="false" />
-				</form:select>
+				${fns:getDictLabel(leave.leaveType, 'oa_leave_type', '')}
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label">开始时间：</label>
 			<div class="controls">
-				<input id="startTime" name="startTime" type="text" readonly="readonly" maxlength="20" class="Wdate required"
-					onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:countLeaveEndDate});"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label">请假天数：</label>
-			<div class="controls">
-				<input id="applyLeaveDays" name="applyLeaveDays" type="number" maxlength="20" class="required digits"/>
-			</div>
-		</div>
-		<div class="control-group">
-			<label class="control-label">是否排除休假日：</label>
-			<div class="controls">
-				<input id="countType1" name="countType" type="radio" value="1" maxlength="20" class="required number"/><label for="countType1">是</label>
-				<input id="countType0" name="countType" type="radio" value="0" maxlength="20" class="required number"/><label for="countType0">否</label>
+				<fmt:formatDate value="${leave.startTime}" pattern="yyyy-MM-dd"/>
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label">结束时间：</label>
 			<div class="controls">
-				<input id="endTime" name="endTime" type="text" readonly="readonly" maxlength="20" class="required"/>
+				<fmt:formatDate value="${leave.endTime}" pattern="yyyy-MM-dd"/>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">是否排除休假日：</label>
+			<div class="controls">
+				${fns:getDictLabel(leave.countType, 'yes_no', '')}
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">申请天数：</label>
+			<div class="controls">
+				${leave.applyLeaveDays}
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">批准天数：</label>
+			<div class="controls">
+				${leave.giveLeaveDays}
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label">请假原因：</label>
 			<div class="controls">
-				<form:textarea path="reason" class="required input-xxlarge" rows="5" maxlength="120"/>
+				${leave.reason}
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">实际开始时间：</label>
+			<div class="controls">
+				<input id="realityStartTime" name="realityStartTime" type="text" readonly="readonly" maxlength="20" class="Wdate required"
+					   onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:countLeaveEndDate});"/>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">实际请假天数：</label>
+			<div class="controls">
+				<input id="realityLeaveDays" name="realityLeaveDays" type="number" maxlength="20" class="required digits"/>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">实际结束时间：</label>
+			<div class="controls">
+				<input id="realityEndTime" name="realityEndTime" type="text" readonly="readonly" maxlength="20" class="required"/>
 			</div>
 		</div>
 		<div class="form-actions">

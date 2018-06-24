@@ -7,9 +7,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.jeremy.common.utils.DateUtils;
+import com.jeremy.common.utils.excel.ExportExcel;
 import com.jeremy.modules.act.entity.Act;
 import com.jeremy.modules.oa.entity.LeaveConfig;
 import com.jeremy.modules.oa.entity.TestAudit;
+import com.jeremy.modules.oa.service.LeaveConfigService;
+import com.jeremy.modules.sys.entity.User;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +54,9 @@ public class LeaveController extends BaseController {
 	@Autowired
 	protected TaskService taskService;
 
+	@Autowired
+	protected LeaveConfigService leaveConfigService;
+
 	@ModelAttribute
 	public Leave get(@RequestParam(required=false) String id) {
 		Leave entity = null;
@@ -77,8 +84,8 @@ public class LeaveController extends BaseController {
 				view = "leaveView";
 			}
 			// 修改环节
-			else if ("modifyApply".equals(taskDefKey)) {
-				view = "leaveForm";
+			else if ("reportBack".equals(taskDefKey)) {
+				view = "leaveReportBack";
 			} else {
 				view = "leaveAudit";
 			}
@@ -96,8 +103,13 @@ public class LeaveController extends BaseController {
 	 */
 	@RequiresPermissions("oa:leave:edit")
 	@RequestMapping(value = "save", method = RequestMethod.POST)
-	public String save(Leave leave, RedirectAttributes redirectAttributes) {
+	public String save(Leave leave, RedirectAttributes redirectAttributes, Model model) {
 		try {
+			int leftHolidays = leaveConfigService.getLeftHolidays(UserUtils.getUser().getId());
+			if ("1".equals(leave.getLeaveType()) && leave.getApplyLeaveDays() > leftHolidays) {
+				addMessage(model, "年休假可用天数不足！");
+				return form(leave, model);
+			}
 			Map<String, Object> variables = Maps.newHashMap();
 			leaveService.save(leave, variables);
 			addMessage(redirectAttributes, "流程已启动，流程ID：" + leave.getProcessInstanceId());
@@ -112,7 +124,7 @@ public class LeaveController extends BaseController {
 	 * 任务列表
 	 */
 	@RequiresPermissions("oa:leave:view")
-	@RequestMapping(value = {"list/task",""})
+	@RequestMapping(value = {"list/task"})
 	public String taskList(HttpSession session, Model model) {
 		String userId = UserUtils.getUser().getLoginName();//ObjectUtils.toString(UserUtils.getUser().getId());
 		List<Leave> results = leaveService.findTodoTasks(userId);
@@ -125,7 +137,7 @@ public class LeaveController extends BaseController {
 	 * @return
 	 */
 	@RequiresPermissions("oa:leave:view")
-	@RequestMapping(value = {"list"})
+	@RequestMapping(value = {"list", ""})
 	public String list(Leave leave, HttpServletRequest request, HttpServletResponse response, Model model) {
         Page<Leave> page = leaveService.find(new Page<Leave>(request, response), leave); 
         model.addAttribute("page", page);
@@ -171,6 +183,45 @@ public class LeaveController extends BaseController {
 		}
 		leaveService.auditSave(leave);
 		return "redirect:" + adminPath + "/act/task/todo/";
+	}
+
+	/**
+	 * 销假
+	 */
+	@RequiresPermissions("oa:leave:edit")
+	@RequestMapping(value = "reportBack")
+	public String reportBack(Leave leave) {
+		leaveService.reportBack(leave);
+		return "redirect:" + adminPath + "/act/task/todo/";
+	}
+
+	/**
+	 * 读取所有流程
+	 * @return
+	 */
+	@RequiresPermissions("oa:leave:count")
+	@RequestMapping(value = "count")
+	public String count(Leave leave, HttpServletRequest request, HttpServletResponse response, Model model) {
+		Page<Leave> page = leaveService.count(new Page<>(request, response), leave);
+		model.addAttribute("page", page);
+		return "modules/oa/leaveCount";
+	}
+
+	/**
+	 * 导出数据
+	 */
+	@RequiresPermissions("oa:leave:count")
+	@RequestMapping(value = "export", method=RequestMethod.POST)
+	public String exportFile(Leave leave, HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
+		try {
+			String fileName = "请假数据"+ DateUtils.getDate("yyyyMMddHHmmss")+".xlsx";
+			Page<Leave> page = leaveService.count(new Page<>(request, response, -1), leave);
+			new ExportExcel("请假数据", User.class).setDataList(page.getList()).write(response, fileName).dispose();
+			return null;
+		} catch (Exception e) {
+			addMessage(redirectAttributes, "导出数据失败！失败信息："+e.getMessage());
+		}
+		return "redirect:" + adminPath + "/oa/leave/count?repage";
 	}
 
 }

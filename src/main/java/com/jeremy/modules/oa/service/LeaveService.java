@@ -10,6 +10,10 @@ import com.jeremy.modules.act.utils.ProcessDefCache;
 import com.jeremy.modules.oa.dao.LeaveDao;
 import com.jeremy.modules.oa.entity.Leave;
 import com.jeremy.modules.oa.entity.TestAudit;
+import com.jeremy.modules.sys.dao.UserDao;
+import com.jeremy.modules.sys.entity.Office;
+import com.jeremy.modules.sys.entity.User;
+import com.jeremy.modules.sys.utils.UserUtils;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RepositoryService;
@@ -39,6 +43,8 @@ import com.jeremy.modules.oa.entity.Leave;
 @Transactional(readOnly = true)
 public class LeaveService extends BaseService {
 
+	private static final String THE_TOP_OFFICE_ID = "2f27a634f63a496dbd45229027eed400";
+
 	@Autowired
 	private LeaveDao leaveDao;
 	@Autowired
@@ -53,6 +59,8 @@ public class LeaveService extends BaseService {
 	private IdentityService identityService;
 	@Autowired
 	private ActTaskService actTaskService;
+	@Autowired
+	private UserDao userDao;
 
 	/**
 	 * 获取流程详细及工作流参数
@@ -93,11 +101,16 @@ public class LeaveService extends BaseService {
 		
 		// 用来设置启动流程的人员ID，引擎会自动把用户ID保存到activiti:initiator中
 		identityService.setAuthenticatedUserId(leave.getCurrentUser().getLoginName());
-		
 		// 启动流程
 		String businessKey = "oa_leave:" + leave.getId();
 		variables.put("type", "leave");
 		variables.put("busId", businessKey);
+		Office currentOffice = leave.getCurrentUser().getOffice();
+		String auditOffice = THE_TOP_OFFICE_ID.equals(currentOffice.getParentId()) ? currentOffice.getId() : currentOffice.getParentId();
+		variables.put("auditOffice", auditOffice);
+		variables.put("officeGrade", currentOffice.getGrade());
+		variables.put("directorGeneralAuditor", getDirectorGeneralAuditor());
+		variables.put("title", "【" + leave.getCurrentUser().getOffice().getName() + "】" + leave.getCurrentUser().getName() + "的请假申请");
 		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActUtils.PD_LEAVE[0], businessKey, variables);
 		leave.setProcessInstance(processInstance);
 		
@@ -107,6 +120,25 @@ public class LeaveService extends BaseService {
 		
 		logger.debug("start process of {key={}, bkey={}, pid={}, variables={}}", ActUtils.PD_LEAVE[0], businessKey, processInstance.getId(), variables);
 		
+	}
+
+	private String getDirectorGeneralAuditor() {
+		User conditionUser = new User();
+		Office conditionOffice = new Office();
+		conditionOffice.setId("1");
+		conditionUser.setOffice(conditionOffice);
+		List<User> userList = userDao.findUserByOfficeId(conditionUser);
+		StringBuilder directorGeneralAuditor = new StringBuilder();
+		User currentUser = UserUtils.getUser();
+		userList.forEach(user -> {
+			if (!user.getLoginName().equals(currentUser.getLoginName())) {
+				if (directorGeneralAuditor.length() != 0) {
+					directorGeneralAuditor.append(",");
+				}
+				directorGeneralAuditor.append(user.getLoginName());
+			}
+		});
+		return directorGeneralAuditor.toString();
 	}
 
 	/**
@@ -141,8 +173,8 @@ public class LeaveService extends BaseService {
 
 	public Page<Leave> find(Page<Leave> page, Leave leave) {
 
-		dataScopeFilter(leave, "id=o.id", "id=a.create_by", "oa:leave:view");
-
+		//dataScopeFilter(leave, "id=o.id", "id=a.create_by", "oa:leave:view");
+		leave.setCreateBy(UserUtils.getUser());
 		leave.setPage(page);
 		page.setList(leaveDao.findList(leave));
 		
@@ -179,22 +211,42 @@ public class LeaveService extends BaseService {
 		leave.preUpdate();
 
 		if (!isPass) {
-			leave.setStatus(0);
+			// 审核拒绝
+			leave.setStatus(4);
 		}
 
 		// 提交流程任务
 		Map<String, Object> vars = Maps.newHashMap();
 		vars.put("isPass", isPass);
-		actTaskService.complete(leave.getAct().getTaskId(), leave.getAct().getProcInsId(), leave.getAct().getComment(), vars);
-
-		if (isPass && leave.getAct().isFinishTask()) {
-			leave.setStatus(3);
-		} else if ("reportBack".equals(actTaskService.getTaskByProcInsId(leave.getAct().getProcInsId()).getTaskDefinitionKey())) {
+		if (isPass && leave.getIsNeedParentAudit() == 0) {
+			// 不需要上级审核，直接跳到销假环节
+			actTaskService.getProcessEngine().getTaskService().addComment(leave.getAct().getTaskId(), leave.getAct().getProcInsId(), leave.getAct().getComment());
+			actTaskService.jumpTask(leave.getAct().getProcInsId(), leave.getAct().getTaskId(), "reportBack", vars);
+		} else {
+			actTaskService.complete(leave.getAct().getTaskId(), leave.getAct().getProcInsId(), leave.getAct().getComment(), vars);
+		}
+		if ("reportBack".equals(actTaskService.getTaskByProcInsId(leave.getAct().getProcInsId()).getTaskDefinitionKey())) {
+			// 审核通过
 			leave.setStatus(2);
 		}
 		leaveDao.update(leave);
-//		vars.put("var_test", "yes_no_test2");
-//		actTaskService.getProcessEngine().getTaskService().addComment(testAudit.getAct().getTaskId(), testAudit.getAct().getProcInsId(), testAudit.getAct().getComment());
-//		actTaskService.jumpTask(testAudit.getAct().getProcInsId(), testAudit.getAct().getTaskId(), "audit2", vars);
+	}
+
+	@Transactional(readOnly = false)
+	public void reportBack(Leave leave) {
+		// 设置意见
+		leave.getAct().setComment("销假成功");
+		leave.preUpdate();
+		leave.setStatus(3);
+		leaveDao.updateRealityTime(leave);
+		actTaskService.complete(leave.getAct().getTaskId(), leave.getAct().getProcInsId(), leave.getAct().getComment(), null);
+	}
+
+	public Page<Leave> count(Page<Leave> page, Leave leave) {
+		dataScopeFilter(leave, "id=o.id", "id=a.create_by", "oa:leave:view");
+		leave.setPage(page);
+		leave.setIsCount(1);
+		page.setList(leaveDao.findList(leave));
+		return page;
 	}
 }
