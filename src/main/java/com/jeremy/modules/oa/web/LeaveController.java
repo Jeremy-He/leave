@@ -7,18 +7,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.jeremy.modules.act.entity.Act;
+import com.jeremy.modules.oa.entity.LeaveConfig;
+import com.jeremy.modules.oa.entity.TestAudit;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.google.common.collect.Maps;
@@ -49,11 +50,44 @@ public class LeaveController extends BaseController {
 	@Autowired
 	protected TaskService taskService;
 
+	@ModelAttribute
+	public Leave get(@RequestParam(required=false) String id) {
+		Leave entity = null;
+		if (com.jeremy.common.utils.StringUtils.isNotBlank(id)){
+			entity = leaveService.get(id);
+		}
+		if (entity == null){
+			entity = new Leave();
+		}
+		return entity;
+	}
+
 	@RequiresPermissions("oa:leave:view")
 	@RequestMapping(value = {"form"})
 	public String form(Leave leave, Model model) {
+		String view = "leaveForm";
+		// 查看审批申请单
+		if (StringUtils.isNotBlank(leave.getId())) {//.getAct().getProcInsId())){
+
+			// 环节编号
+			String taskDefKey = leave.getAct().getTaskDefKey();
+
+			// 查看工单
+			if (leave.getAct().isFinishTask()) {
+				view = "leaveView";
+			}
+			// 修改环节
+			else if ("modifyApply".equals(taskDefKey)) {
+				view = "leaveForm";
+			} else {
+				view = "leaveAudit";
+			}
+			Act act = leave.getAct();
+			leave = leaveService.get(leave.getId());
+			leave.setAct(act);
+		}
 		model.addAttribute("leave", leave);
-		return "modules/oa/leaveForm";
+		return "modules/oa/" + view;
 	}
 
 	/**
@@ -76,7 +110,6 @@ public class LeaveController extends BaseController {
 
 	/**
 	 * 任务列表
-	 * @param leave	
 	 */
 	@RequiresPermissions("oa:leave:view")
 	@RequestMapping(value = {"list/task",""})
@@ -123,6 +156,21 @@ public class LeaveController extends BaseController {
 		Map<String, Object> variables = taskService.getVariables(taskId);
 		leave.setVariables(variables);
 		return JsonMapper.getInstance().toJson(leave);
+	}
+
+	/**
+	 * 工单执行（完成任务）
+	 */
+	@RequiresPermissions("oa:leave:edit")
+	@RequestMapping(value = "saveAudit")
+	public String saveAudit(Leave leave, Model model) {
+		if (StringUtils.isBlank(leave.getAct().getFlag())
+				|| StringUtils.isBlank(leave.getAct().getComment())){
+			addMessage(model, "请填写审核意见。");
+			return form(leave, model);
+		}
+		leaveService.auditSave(leave);
+		return "redirect:" + adminPath + "/act/task/todo/";
 	}
 
 }

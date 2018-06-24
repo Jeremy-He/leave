@@ -25,13 +25,13 @@
 			});
             $("#startTime").change(countLeaveEndDate);
             $("#applyLeaveDays").change(countLeaveEndDate);
-            $("input[name='countType']").click(countLeaveEndDate);
+            $("input[name='countType']").change(countLeaveEndDate);
 		});
 		function countLeaveEndDate() {
             var startTime = $("#startTime").val();
             var applyLeaveDays = $("#applyLeaveDays").val();
             var countType = $("input[name='countType']:checked").val();
-            if (startTime === '' || applyLeaveDays === '' || countType === '') {
+            if (startTime === '' || applyLeaveDays === '' || countType === '' || countType === undefined) {
                 return;
 			}
             $.ajax({
@@ -77,7 +77,7 @@
 		<div class="control-group">
 			<label class="control-label">请假天数：</label>
 			<div class="controls">
-				<input id="applyLeaveDays" name="applyLeaveDays" type="text" maxlength="20" class="required number"/>
+				<input id="applyLeaveDays" name="applyLeaveDays" type="number" maxlength="20" class="required digits"/>
 			</div>
 		</div>
 		<div class="control-group">

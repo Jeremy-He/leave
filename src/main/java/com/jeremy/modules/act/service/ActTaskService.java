@@ -101,7 +101,7 @@ public class ActTaskService extends BaseService {
 	private RepositoryService repositoryService;
 	@Autowired
 	private IdentityService identityService;
-	
+
 	/**
 	 * 获取待办列表
 	 * @param procDefKey 流程定义标识
@@ -443,6 +443,13 @@ public class ActTaskService extends BaseService {
 	 */
 	public Task getTask(String taskId){
 		return taskService.createTaskQuery().taskId(taskId).singleResult();
+	}
+
+	/**
+	 * 获取任务
+	 */
+	public Task getTaskByProcInsId(String procInsId) {
+		return taskService.createTaskQuery().processInstanceId(procInsId).singleResult();
 	}
 	
 	/**

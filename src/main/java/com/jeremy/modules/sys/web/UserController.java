@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 
 import com.jeremy.common.beanvalidator.BeanValidators;
+import com.jeremy.modules.oa.service.LeaveConfigService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -48,6 +49,9 @@ public class UserController extends BaseController {
 
 	@Autowired
 	private SystemService systemService;
+
+	@Autowired
+	private LeaveConfigService leaveConfigService;
 	
 	@ModelAttribute
 	public User get(@RequestParam(required=false) String id) {
@@ -289,6 +293,7 @@ public class UserController extends BaseController {
 		}
 		model.addAttribute("user", currentUser);
 		model.addAttribute("Global", new Global());
+		model.addAttribute("leftHolidays", leaveConfigService.getLeftHolidays(currentUser.getId()));
 		return "modules/sys/userInfo";
 	}
 

@@ -33,15 +33,6 @@ import org.springframework.util.CollectionUtils;
 @Transactional(readOnly = true)
 public class HolidaysService extends CrudService<HolidaysDao, Holidays> {
 
-	@Autowired
-	private UserDao userDao;
-
-	@Autowired
-	private LeaveDao leaveDao;
-
-	@Autowired
-	private LeaveConfigDao leaveConfigDao;
-
 	public Holidays get(String id) {
 		return super.get(id);
 	}
@@ -62,27 +53,6 @@ public class HolidaysService extends CrudService<HolidaysDao, Holidays> {
 	@Transactional(readOnly = false)
 	public void delete(Holidays holidays) {
 		super.delete(holidays);
-	}
-
-	/**
-	 * 获取剩余年休假天数
-	 * @param userId
-	 * @return
-	 */
-	public int getLeftHolidays(String userId) {
-		User user = userDao.get(userId);
-		Leave condition = new Leave();
-		condition.setCreateDateStart(user.getEntryDate());
-		condition.setCreateDateEnd(DateUtils.addYears(user.getEntryDate(), 1));
-		// 审核通过
-		condition.setStatus(2);
-		List<Leave> leaveList = leaveDao.findList(condition);
-		if (!CollectionUtils.isEmpty(leaveList)) {
-			return 0;
-		}
-		int seniority = DateUtils.pastYears(user.getEntryDate());
-		Integer leaveDays = leaveConfigDao.getLeaveDays(seniority);
-		return leaveDays == null ? 0 : leaveDays;
 	}
 
 	/**

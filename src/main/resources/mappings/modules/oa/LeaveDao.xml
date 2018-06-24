@@ -4,6 +4,7 @@
 	
     <sql id="leaveColumns">
 		a.*,
+		a.process_instance_id AS "act.procInsId",
 		u.id AS "createBy.id",
 		u.name AS "createBy.name",
 		o.id AS "createBy.office.id",

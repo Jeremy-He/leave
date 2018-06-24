@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+import com.jeremy.modules.act.service.ActTaskService;
+import com.jeremy.modules.act.utils.ProcessDefCache;
 import com.jeremy.modules.oa.dao.LeaveDao;
 import com.jeremy.modules.oa.entity.Leave;
+import com.jeremy.modules.oa.entity.TestAudit;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RepositoryService;
@@ -47,6 +51,8 @@ public class LeaveService extends BaseService {
 	protected RepositoryService repositoryService;
 	@Autowired
 	private IdentityService identityService;
+	@Autowired
+	private ActTaskService actTaskService;
 
 	/**
 	 * 获取流程详细及工作流参数
@@ -55,14 +61,16 @@ public class LeaveService extends BaseService {
 	@SuppressWarnings("unchecked")
 	public Leave get(String id) {
 		Leave leave = leaveDao.get(id);
-		Map<String,Object> variables=null;
-		HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(leave.getProcessInstanceId()).singleResult();
-		if(historicProcessInstance!=null) {
-			variables = Collections3.extractToMap(historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list(), "variableName", "value");
-		} else {
-			variables = runtimeService.getVariables(runtimeService.createProcessInstanceQuery().processInstanceId(leave.getProcessInstanceId()).active().singleResult().getId());
+		if (leave != null && StringUtils.isNotBlank(leave.getProcessInstanceId())) {
+			Map<String,Object> variables;
+			HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(leave.getProcessInstanceId()).singleResult();
+			if(historicProcessInstance!=null) {
+				variables = Collections3.extractToMap(historyService.createHistoricVariableInstanceQuery().processInstanceId(historicProcessInstance.getId()).list(), "variableName", "value");
+			} else {
+				variables = runtimeService.getVariables(runtimeService.createProcessInstanceQuery().processInstanceId(leave.getProcessInstanceId()).active().singleResult().getId());
+			}
+			leave.setVariables(variables);
 		}
-		leave.setVariables(variables);
 		return leave;
 	}
 	
@@ -75,7 +83,7 @@ public class LeaveService extends BaseService {
 		// 保存业务数据
 		if (StringUtils.isBlank(leave.getId())){
 			leave.preInsert();
-			leave.setStatus(0);
+			leave.setStatus(1);
 			leaveDao.insert(leave);
 		}else{
 			leave.preUpdate();
@@ -155,5 +163,38 @@ public class LeaveService extends BaseService {
 			}
 		}
 		return page;
+	}
+
+	/**
+	 * 审核审批保存
+	 */
+	@Transactional(readOnly = false)
+	public void auditSave(Leave leave) {
+
+		boolean isPass = "yes".equals(leave.getAct().getFlag());
+
+		// 设置意见
+		leave.getAct().setComment((isPass?"[同意] ":"[驳回] ")+leave.getAct().getComment());
+
+		leave.preUpdate();
+
+		if (!isPass) {
+			leave.setStatus(0);
+		}
+
+		// 提交流程任务
+		Map<String, Object> vars = Maps.newHashMap();
+		vars.put("isPass", isPass);
+		actTaskService.complete(leave.getAct().getTaskId(), leave.getAct().getProcInsId(), leave.getAct().getComment(), vars);
+
+		if (isPass && leave.getAct().isFinishTask()) {
+			leave.setStatus(3);
+		} else if ("reportBack".equals(actTaskService.getTaskByProcInsId(leave.getAct().getProcInsId()).getTaskDefinitionKey())) {
+			leave.setStatus(2);
+		}
+		leaveDao.update(leave);
+//		vars.put("var_test", "yes_no_test2");
+//		actTaskService.getProcessEngine().getTaskService().addComment(testAudit.getAct().getTaskId(), testAudit.getAct().getProcInsId(), testAudit.getAct().getComment());
+//		actTaskService.jumpTask(testAudit.getAct().getProcInsId(), testAudit.getAct().getTaskId(), "audit2", vars);
 	}
 }

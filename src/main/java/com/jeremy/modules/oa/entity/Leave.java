@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.jeremy.common.persistence.ActEntity;
+import com.jeremy.modules.act.entity.Act;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -22,7 +24,7 @@ import com.jeremy.modules.sys.utils.DictUtils;
  * @author liuj
  * @version 2013-04-05
  */
-public class Leave extends DataEntity<Leave> {
+public class Leave extends ActEntity<Leave> {
 	
 	private static final long serialVersionUID = 1L;
 	private String reason; 	// 请假原因

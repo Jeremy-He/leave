@@ -218,12 +218,20 @@
 				<td>{{createDate}}</td>
 			</tr>
 			<tr>
-				<td>请假<font color="red">开始</font>时间：</td>
+				<td>请假开始时间：</td>
 				<td>{{startTime}}</td>
 			</tr>
 			<tr>
-				<td>请假<font color="red">结束</font>时间：</td>
+				<td>请假结束时间：</td>
 				<td>{{endTime}}</td>
+			</tr>
+			<tr>
+				<td>申请天数：</td>
+				<td>{{applyLeaveDays}}</td>
+			</tr>
+			<tr>
+				<td>批准天数：</td>
+				<td><input id="giveLeaveDays" name="giveLeaveDays" type="number" class="required digits" value="{{giveLeaveDays}}" style="margin: 0;" /></td>
 			</tr>
 			<tr>
 				<td>请假事由：</td>
