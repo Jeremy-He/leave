@@ -9,8 +9,10 @@ import javax.validation.ConstraintViolationException;
 
 import com.google.common.collect.Lists;
 import com.jeremy.common.beanvalidator.BeanValidators;
+import com.jeremy.common.utils.DateUtils;
 import com.jeremy.common.utils.excel.ExportExcel;
 import com.jeremy.common.utils.excel.ImportExcel;
+import com.jeremy.modules.oa.entity.Leave;
 import com.jeremy.modules.sys.entity.User;
 import com.jeremy.modules.sys.service.SystemService;
 import com.jeremy.modules.sys.utils.UserUtils;
@@ -19,10 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -34,10 +33,7 @@ import com.jeremy.modules.oa.entity.Holidays;
 import com.jeremy.modules.oa.service.HolidaysService;
 
 import java.sql.ClientInfoStatus;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * 法定节假日配置Controller
@@ -154,6 +150,14 @@ public class HolidaysController extends BaseController {
 			addMessage(redirectAttributes, "导入模板下载失败！失败信息："+e.getMessage());
 		}
 		return "redirect:" + adminPath + "/oa/holidays/list?repage";
+	}
+
+	@RequiresPermissions("user")
+	@RequestMapping(value = "countLeaveEndDate", method=RequestMethod.POST)
+	@ResponseBody
+	public String countLeaveEndDate(Leave leave) {
+		Date endDate = holidaysService.countLeaveEndDate(leave);
+		return DateUtils.formatDate(endDate, "yyyy-MM-dd");
 	}
 
 }

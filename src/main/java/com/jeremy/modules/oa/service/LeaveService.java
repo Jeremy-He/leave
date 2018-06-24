@@ -68,7 +68,6 @@ public class LeaveService extends BaseService {
 	
 	/**
 	 * 启动流程
-	 * @param entity
 	 */
 	@Transactional(readOnly = false)
 	public void save(Leave leave, Map<String, Object> variables) {
@@ -76,6 +75,7 @@ public class LeaveService extends BaseService {
 		// 保存业务数据
 		if (StringUtils.isBlank(leave.getId())){
 			leave.preInsert();
+			leave.setStatus(0);
 			leaveDao.insert(leave);
 		}else{
 			leave.preUpdate();
@@ -87,7 +87,7 @@ public class LeaveService extends BaseService {
 		identityService.setAuthenticatedUserId(leave.getCurrentUser().getLoginName());
 		
 		// 启动流程
-		String businessKey = leave.getId().toString();
+		String businessKey = "oa_leave:" + leave.getId();
 		variables.put("type", "leave");
 		variables.put("busId", businessKey);
 		ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActUtils.PD_LEAVE[0], businessKey, variables);
@@ -97,8 +97,7 @@ public class LeaveService extends BaseService {
 		leave.setProcessInstanceId(processInstance.getId());
 		leaveDao.updateProcessInstanceId(leave);
 		
-		logger.debug("start process of {key={}, bkey={}, pid={}, variables={}}", new Object[] { 
-				ActUtils.PD_LEAVE[0], businessKey, processInstance.getId(), variables });
+		logger.debug("start process of {key={}, bkey={}, pid={}, variables={}}", ActUtils.PD_LEAVE[0], businessKey, processInstance.getId(), variables);
 		
 	}
 
@@ -122,7 +121,7 @@ public class LeaveService extends BaseService {
 		for (Task task : tasks) {
 			String processInstanceId = task.getProcessInstanceId();
 			ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).active().singleResult();
-			String businessKey = processInstance.getBusinessKey();
+			String businessKey = processInstance.getBusinessKey().split(":")[1];
 			Leave leave = leaveDao.get(businessKey);
 			leave.setTask(task);
 			leave.setProcessInstance(processInstance);

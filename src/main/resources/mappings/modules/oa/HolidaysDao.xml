@@ -20,6 +20,14 @@
 		<include refid="holidaysJoins"/>
 		WHERE a.id = #{id,jdbcType=VARCHAR}
 	</select>
+
+	<select id="getByDate" resultType="com.jeremy.modules.oa.entity.Holidays">
+		SELECT
+		<include refid="holidaysColumns"/>
+		FROM oa_holidays a
+		<include refid="holidaysJoins"/>
+		WHERE a.start_date &lt;= date_format(#{date}, '%Y%m%d') and a.end_date &gt;= date_format(#{date}, '%Y%m%d') limit 1
+	</select>
 	
 	<select id="findList" resultType="com.jeremy.modules.oa.entity.Holidays">
 		SELECT 

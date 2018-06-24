@@ -35,6 +35,8 @@ public class Leave extends DataEntity<Leave> {
 	private Integer applyLeaveDays; //申请请假天数
 	private Integer giveLeaveDays; //批准请假天数
 	private Integer realityLeaveDays; //实际请假天数
+	private Integer status;  //状态
+	private Integer countType; //计算方式
 
 	private String ids;
 	private Date createDateStart;
@@ -227,6 +229,22 @@ public class Leave extends DataEntity<Leave> {
 
 	public void setRealityLeaveDays(Integer realityLeaveDays) {
 		this.realityLeaveDays = realityLeaveDays;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public Integer getCountType() {
+		return countType;
+	}
+
+	public void setCountType(Integer countType) {
+		this.countType = countType;
 	}
 }
 

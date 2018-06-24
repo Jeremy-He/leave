@@ -10,6 +10,7 @@
 			$("#inputForm").validate({
 				submitHandler: function(form){
 					loading('正在提交，请稍等...');
+                    countLeaveEndDate();
 					form.submit();
 				},
 				errorContainer: "#messageBox",
@@ -22,7 +23,31 @@
 					}
 				}
 			});
+            $("#startTime").change(countLeaveEndDate);
+            $("#applyLeaveDays").change(countLeaveEndDate);
+            $("input[name='countType']").click(countLeaveEndDate);
 		});
+		function countLeaveEndDate() {
+            var startTime = $("#startTime").val();
+            var applyLeaveDays = $("#applyLeaveDays").val();
+            var countType = $("input[name='countType']:checked").val();
+            if (startTime === '' || applyLeaveDays === '' || countType === '') {
+                return;
+			}
+            $.ajax({
+				url: "${ctx}/oa/holidays/countLeaveEndDate",
+				type: "post",
+				async: false,
+				data: {
+                    startTime: startTime,
+                    applyLeaveDays: applyLeaveDays,
+                    countType: countType
+                },
+				success:function (endTime) {
+                    $("#endTime").val(endTime);
+                }
+			});
+        }
 	</script>
 </head>
 <body>
@@ -37,7 +62,7 @@
 		<div class="control-group">
 			<label class="control-label">请假类型：</label>
 			<div class="controls">
-				<form:select path="leaveType" >
+				<form:select path="leaveType" cssClass="input-medium">
 					<form:options items="${fns:getDictList('oa_leave_type')}" itemLabel="label" itemValue="value" htmlEscape="false" />
 				</form:select>
 			</div>
@@ -46,20 +71,32 @@
 			<label class="control-label">开始时间：</label>
 			<div class="controls">
 				<input id="startTime" name="startTime" type="text" readonly="readonly" maxlength="20" class="Wdate required"
-					onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false});"/>
+					onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:countLeaveEndDate});"/>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">请假天数：</label>
+			<div class="controls">
+				<input id="applyLeaveDays" name="applyLeaveDays" type="text" maxlength="20" class="required number"/>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label">是否排除休假日：</label>
+			<div class="controls">
+				<input id="countType1" name="countType" type="radio" value="1" maxlength="20" class="required number"/><label for="countType1">是</label>
+				<input id="countType0" name="countType" type="radio" value="0" maxlength="20" class="required number"/><label for="countType0">否</label>
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label">结束时间：</label>
 			<div class="controls">
-				<input id="endTime" name="endTime" type="text" readonly="readonly" maxlength="20" class="Wdate required"
-					onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false});"/>
+				<input id="endTime" name="endTime" type="text" readonly="readonly" maxlength="20" class="required"/>
 			</div>
 		</div>
 		<div class="control-group">
 			<label class="control-label">请假原因：</label>
 			<div class="controls">
-				<form:textarea path="reason" class="required" rows="5" maxlength="20"/>
+				<form:textarea path="reason" class="required input-xxlarge" rows="5" maxlength="120"/>
 			</div>
 		</div>
 		<div class="form-actions">

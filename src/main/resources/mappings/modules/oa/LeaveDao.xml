@@ -38,6 +38,9 @@
 		<if test="leaveType != null and leaveType != ''">
 			AND a.leave_type = #{leaveType}
 		</if>
+		<if test="status != null and status != ''">
+			AND a.status = #{status}
+		</if>
 		<if test="ids != null and ids != ''">
 			AND a.id IN (${ids})
 		</if>
@@ -68,6 +71,8 @@
 			apply_leave_days,
 			give_leave_days,
 			reality_leave_days,
+			status,
+			count_type,
 			create_by, 
 			create_date, 
 			update_by, 
@@ -87,6 +92,8 @@
 			#{applyLeaveDays},
 			#{giveLeaveDays},
 			#{realityLeaveDays},
+			#{status},
+			#{countType},
 			#{createBy.id}, 
 			#{createDate}, 
 			#{updateBy.id}, 
@@ -104,6 +111,8 @@
 			reason = #{reason},
 			apply_leave_days = #{applyLeaveDays},
 			give_leave_days = #{giveLeaveDays},
+			status = #{status},
+			count_type = #{countType},
 			update_by = #{updateBy.id}, 
 			update_date = #{updateDate}, 
 			remarks = #{remarks}
@@ -115,6 +124,7 @@
 			reality_start_time = #{realityStartTime}, 
 			reality_end_time = #{realityEndTime},
 			reality_leave_days = #{realityLeaveDays},
+			status = #{status}
 			update_by = #{updateBy.id}, 
 			update_date = #{updateDate}, 
 			remarks = #{remarks}

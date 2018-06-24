@@ -4,6 +4,8 @@ import com.jeremy.common.persistence.CrudDao;
 import com.jeremy.common.persistence.annotation.MyBatisDao;
 import com.jeremy.modules.oa.entity.Holidays;
 
+import java.util.Date;
+
 /**
  * 法定节假日配置DAO接口
  * @author Jeremy
@@ -11,5 +13,7 @@ import com.jeremy.modules.oa.entity.Holidays;
  */
 @MyBatisDao
 public interface HolidaysDao extends CrudDao<Holidays> {
+
+    Holidays getByDate(Date date);
 	
 }

@@ -2,6 +2,7 @@
 package com.jeremy.common.utils;
 
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -93,6 +94,13 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	public static String getWeek() {
 		return formatDate(new Date(), "E");
 	}
+
+    /**
+     * 得到当前星期字符串 格式（E）星期几
+     */
+    public static String getWeek(Date date) {
+        return formatDate(date, "E");
+    }
 	
 	/**
 	 * 日期型字符串转化为日期 格式
@@ -110,6 +118,27 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 			return null;
 		}
 	}
+
+    /**
+     * 获取过去的年数
+     * @param date
+     * @return
+     */
+	public static int pastYears(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        long nowMillis = calendar.getTimeInMillis();
+        calendar.setTime(date);
+        int pastYears = 0;
+        while (true) {
+            calendar.add(Calendar.YEAR, 1);
+            if (calendar.getTimeInMillis() < nowMillis) {
+                pastYears++;
+            } else {
+                break;
+            }
+        }
+        return pastYears;
+    }
 
 	/**
 	 * 获取过去的天数
@@ -173,9 +202,8 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @throws ParseException
 	 */
 	public static void main(String[] args) throws ParseException {
-//		System.out.println(formatDate(parseDate("2010/3/6")));
-//		System.out.println(getDate("yyyy年MM月dd日 E"));
-//		long time = new Date().getTime()-parseDate("2012-11-19").getTime();
-//		System.out.println(time/(24*60*60*1000));
+		System.out.println(pastYears(parseDate("2010/6/24")));
+		System.out.println(getWeek());
+		System.out.println();
 	}
 }

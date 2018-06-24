@@ -24,6 +24,14 @@
 		<include refid="leaveConfigJoins"/>
 		WHERE a.id = #{id,jdbcType=VARCHAR}
 	</select>
+
+	<select id="getLeaveDays" resultType="Integer">
+		SELECT
+		<include refid="leaveConfigColumns"/>
+		FROM oa_leave_config a
+		<include refid="leaveConfigJoins"/>
+		WHERE a.min_seniority &lt;= #{seniority} and a.max_seniority &gt;= #{seniority}
+	</select>
 	
 	<select id="findList" resultType="com.jeremy.modules.oa.entity.LeaveConfig">
 		SELECT 

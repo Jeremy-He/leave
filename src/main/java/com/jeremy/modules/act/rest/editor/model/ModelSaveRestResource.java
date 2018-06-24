@@ -72,7 +72,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 
 			repositoryService.addModelEditorSource(model.getId(), values.getFirst("json_xml").getBytes("utf-8"));
 
-			InputStream svgStream = new ByteArrayInputStream(values.getFirst("svg_xml").getBytes("utf-8"));
+			/*InputStream svgStream = new ByteArrayInputStream(values.getFirst("svg_xml").getBytes("utf-8"));
 			TranscoderInput input = new TranscoderInput(svgStream);
 
 			PNGTranscoder transcoder = new PNGTranscoder();
@@ -84,7 +84,7 @@ public class ModelSaveRestResource implements ModelDataJsonConstants {
 			transcoder.transcode(input, output);
 			final byte[] result = outStream.toByteArray();
 			repositoryService.addModelEditorSourceExtra(model.getId(), result);
-			outStream.close();
+			outStream.close();*/
 
 		} catch (Exception e) {
 			LOGGER.error("Error saving model", e);

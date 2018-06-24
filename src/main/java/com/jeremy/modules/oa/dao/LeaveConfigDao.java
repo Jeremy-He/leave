@@ -11,5 +11,6 @@ import com.jeremy.modules.oa.entity.LeaveConfig;
  */
 @MyBatisDao
 public interface LeaveConfigDao extends CrudDao<LeaveConfig> {
-	
+
+    Integer getLeaveDays(int seniority);
 }
