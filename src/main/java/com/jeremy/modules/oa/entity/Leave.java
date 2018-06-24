@@ -267,6 +267,7 @@ public class Leave extends ActEntity<Leave> {
 		this.status = status;
 	}
 
+	@ExcelField(title="是否排除休假日", type=1, align=2, sort=6, dictType = "yes_no")
 	public Integer getCountType() {
 		return countType;
 	}
@@ -275,7 +276,6 @@ public class Leave extends ActEntity<Leave> {
 		this.countType = countType;
 	}
 
-	@ExcelField(title="是否排除休假日", type=1, align=2, sort=6, dictType = "yes_no")
 	public Integer getIsNeedParentAudit() {
 		return isNeedParentAudit;
 	}
