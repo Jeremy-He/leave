@@ -216,7 +216,7 @@ public class LeaveController extends BaseController {
 		try {
 			String fileName = "请假数据"+ DateUtils.getDate("yyyyMMddHHmmss")+".xlsx";
 			Page<Leave> page = leaveService.count(new Page<>(request, response, -1), leave);
-			new ExportExcel("请假数据", User.class).setDataList(page.getList()).write(response, fileName).dispose();
+			new ExportExcel("请假数据", Leave.class).setDataList(page.getList()).write(response, fileName).dispose();
 			return null;
 		} catch (Exception e) {
 			addMessage(redirectAttributes, "导出数据失败！失败信息："+e.getMessage());
